@@ -258,7 +258,7 @@ class RESTHandler(BaseHandler):
 		return [e for e in self.Model.query().fetch() if self._can_do('read', e)]
 	def can_create(self, entity): return False
 	def can_read(self, entity): return False
-	def can_update(self, entity): return False
+	def can_update(self, entity, existing_entity): return False
 	def can_delete(self, entity): return False
 	def _can_do(self, action, *args):
 		func = getattr(self, 'can_'+action)
