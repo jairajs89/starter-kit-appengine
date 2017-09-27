@@ -16,9 +16,7 @@ from google.appengine.datastore     import datastore_stub_util
 from google.appengine.ext           import ndb, testbed
 from webtest                        import TestApp
 
-import lib.mixpanel as mixpanel
-from lib.utils import KIK_JWS
-from app       import app
+from app import app
 
 
 
@@ -76,8 +74,6 @@ class URLFetchServiceMock(apiproxy_stub.APIProxyStub):
 
 class TestBase(TestCase):
 	CUSTOM_URLFETCH = True
-	USERNAME        = 'kikteam'
-	HOSTNAME        = 'myservice.appspot.com'
 
 	def setUp(self):
 		root         = dirname('..')
@@ -106,8 +102,6 @@ class TestBase(TestCase):
 			self.testbed.init_urlfetch_stub()
 		self.taskqueue_stub = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
 		ndb.get_context().set_cache_policy(lambda key: False)
-		mixpanel.DONT_FLUSH_QUEUE = True
-		mixpanel.clear()
 
 	def tearDown(self):
 		self.testbed.deactivate()
@@ -171,35 +165,3 @@ class TestBase(TestCase):
 			return func(resource, params=data, status=status, headers=headers)
 		else:
 			return func(resource, status=status, headers=headers)
-
-	def auth_api_call(self, method, resource, data=None, status=200, headers={}):
-		method = method.lower()
-		if method.lower() in ('put', 'post', 'patch'):
-			if data and isinstance(data, dict):
-				payload = json_stringify(data)
-			else:
-				payload = data
-			data = None
-			as_header = False
-		else:
-			payload = resource.split('?')[0]
-			as_header = True
-		now = int( mktime(datetime.utcnow().utctimetuple()) ) * 1000
-		jws_headers = json_stringify({
-			'alg'      : 'RS256'           ,
-			'kikUsr'   : self.USERNAME     ,
-			'exp'      : now + 1000*60*60*2,
-			'x5u'      : self.HOSTNAME     ,
-			'nbf'      : now - 1000*60*60  ,
-			'kikCrdDm' : self.HOSTNAME     ,
-			'kikDbg'   : True
-		})
-		jws = '.'.join(p.encode('base64').strip().replace('=','') for p in [
-			jws_headers, payload, 'signature'
-		])
-		if as_header:
-			headers[KIK_JWS] = jws
-		else:
-			headers['Content-Type'] = 'text/plain'
-			data = jws
-		return self.api_call(method, resource, data=data, status=status, headers=headers);

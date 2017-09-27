@@ -12,15 +12,11 @@ from google.appengine.api.validation       import ValidationError
 from google.appengine.ext                  import ndb
 import webapp2
 
-import lib.mixpanel as mixpanel
-
 
 
 DEBUG         = ('Development' in environ.get('SERVER_SOFTWARE', 'Production'))
-ORIGINS       = '*' # verify the jws host instead of locking origin
+ORIGINS       = '*'
 OPTIONS_CACHE = 365 * 24 * 60 * 60 # 1 year
-KIK_SESSION   = 'X-Kik-User-Session'
-KIK_JWS       = 'X-Kik-JWS'
 
 
 
@@ -101,10 +97,6 @@ class BaseModel(ndb.Model):
 class BaseHandler(webapp2.RequestHandler):
 	Model       = None
 	_read_only  = []
-	username    = None
-	hostname    = None
-	auth_params = None
-	kik_session = None
 
 	def initialize(self, *args, **kwargs):
 		value = super(BaseHandler, self).initialize(*args, **kwargs)
@@ -115,18 +107,6 @@ class BaseHandler(webapp2.RequestHandler):
 		self.params = {}
 		self.params.update(self.request.params)
 		self.params.update(self.body_params)
-		try:
-			session = self.request.headers.get(KIK_SESSION)
-			if self.request.method in ('POST', 'PUT', 'PATCH'):
-				jws = self.request.body
-				payload = None
-			else:
-				jws = self.request.headers[KIK_JWS]
-				payload = self.request.path
-			from lib.jws import get_verified_data
-			self.username, self.hostname, self.auth_params, self.kik_session = get_verified_data(jws, expected=payload, session_token=session)
-		except:
-			pass
 		return value
 
 	def _populate_entity(self, entity):
@@ -141,13 +121,9 @@ class BaseHandler(webapp2.RequestHandler):
 				props.remove(prop)
 		if 'id' in props:
 			props.remove('id')
-		if self.auth_params is not None:
-			params = self.auth_params
-		else:
-			params = self.body_params
 		for prop in props:
-			if prop in params:
-				value = params[prop]
+			if prop in self.body_params:
+				value = self.body_params[prop]
 				prop_field = getattr(self.Model, prop)
 				if isinstance(prop_field, ndb.ComputedProperty):
 					continue
@@ -186,7 +162,6 @@ class BaseHandler(webapp2.RequestHandler):
 		else:
 			self.response.set_status(500)
 		self.response.write('An error occurred.')
-		mixpanel.smart_flush()
 
 	def security_headers(self):
 		self.response.headers['X-Frame-Options'] = 'DENY'
@@ -199,7 +174,7 @@ class BaseHandler(webapp2.RequestHandler):
 
 	def cors_headers(self):
 		self.response.headers['Access-Control-Allow-Origin' ] = ORIGINS
-		self.response.headers['Access-Control-Allow-Headers'] = 'Content-Type, %s, %s' % (KIK_SESSION, KIK_JWS)
+		self.response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
 		self.response.headers['Access-Control-Max-Age'      ] = str(OPTIONS_CACHE)
 
 	def options(self, *args, **kwargs):
@@ -226,18 +201,8 @@ class BaseHandler(webapp2.RequestHandler):
 				data = [e.to_dict() for e in data]
 			data = json_stringify(data, separators=(',',':'))
 
-		# Let me begin with an apology. The Access-Control-Expose-Headers header is
-		# not supported on most devices and prevents me from sending the session
-		# token in a header. Instead of poluting the body of the response I have
-		# decided to polute the Content-Type header with an extra parameter that
-		# the client can read (because it is a "simple" header). I apologise for the
-		# hackery that is below.
-		if self.kik_session:
-			content_type += '; kik-session=%s' % self.kik_session
-
 		self.response.headers['Content-Type'] = content_type
 		self.response.out.write(data)
-		mixpanel.smart_flush()
 
 	def respond_error(self, code, message='', cache_life=0, headers={}):
 		self.response.set_status(code)
@@ -249,7 +214,6 @@ class BaseHandler(webapp2.RequestHandler):
 		if 'Content-Type' not in headers:
 			self.response.headers['Content-Type'] = 'text/plain'
 		self.response.out.write(message)
-		mixpanel.smart_flush()
 
 
 

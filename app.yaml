@@ -5,10 +5,6 @@ api_version: 1
 threadsafe: yes
 
 handlers:
-- url: /api.js
-  static_files: api.js
-  upload: api.js
-
 - url: /.*
   script: app.app
   secure: always
