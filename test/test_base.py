@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import logging
 from datetime import datetime
 from json     import dumps as json_stringify

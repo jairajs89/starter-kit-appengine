@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #TODO: work with gsutil
 
 import os

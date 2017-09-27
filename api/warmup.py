@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-
-from lib.utils import BaseHandler
-
+from api.base_handler import BaseHandler
 
 
 class WarmupHandler(BaseHandler):
@@ -9,7 +6,6 @@ class WarmupHandler(BaseHandler):
 		# This get's called by AppEngine when your server starts up.
 		# Add any necessary startup logic here.
 		self.respond('Hello, world!')
-
 
 
 routes = [

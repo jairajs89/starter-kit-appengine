@@ -1,4 +1,12 @@
-#TODO
+# TODO: Features
+- DB (models, queries)
+- Cache
+- Taskqueue
+- Cron
+- Rest APIs
+- Testing
+
+# TODO
 - gsutil usage
 - dependency management
 - turn whole thing into library
@@ -7,6 +15,15 @@
 - better model features
 - rewrite basehandler
 - rewrite resthandler
+- config model
+- flake8
+- no tabs, all spaces
+- no shebang
+- api vs cron vs task
+
+
+
+---
 
 
 
