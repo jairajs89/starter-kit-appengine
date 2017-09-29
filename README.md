@@ -28,12 +28,12 @@
 
 ### Setup
 
-[Install Python SDK for Google AppEngine](https://developers.google.com/appengine/downloads)
+[Install Python SDK for Google AppEngine](https://cloud.google.com/appengine/docs/standard/python/download)
 
-### Run debug server
+### Development
 
 ```sh
-make
+make debug
 # your debug server is now running at localhost:8080
 ```
 
@@ -41,4 +41,10 @@ Run tests:
 
 ```sh
 make test
+```
+
+### Deployment
+
+```sh
+make deploy
 ```
