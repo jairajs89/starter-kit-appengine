@@ -14,7 +14,7 @@ def datetime_to_millis(dt):
 
 def millis_to_datetime(value):
     seconds = int(value/1000.0)
-    dt = datetime.utcfromtimestamp(seconds) + timedelta(milliseconds=int(millis)-seconds*1000)
+    dt = datetime.utcfromtimestamp(seconds) + timedelta(milliseconds=int(value)-seconds*1000)
     return dt
 
 
