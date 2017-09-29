@@ -1,19 +1,18 @@
 import logging
-from datetime import datetime
-from json     import dumps as json_stringify, loads as json_parse
+import json
 
-from google.appengine.api                  import users
+from google.appengine.api import users
 from google.appengine.api.datastore_errors import BadValueError
-from google.appengine.api.validation       import ValidationError
-from google.appengine.ext                  import ndb
+from google.appengine.api.validation import ValidationError
+from google.appengine.ext import ndb
 import webapp2
 
-from lib.utils        import DEBUG, millis_to_datetime
+from lib.utils import DEBUG, millis_to_datetime
 from model.base_model import BaseModel
 
 
-ORIGINS       = '*'
-OPTIONS_CACHE = 365 * 24 * 60 * 60 # 1 year
+ORIGINS = '*'
+OPTIONS_CACHE = 365 * 24 * 60 * 60  # 1 year
 
 
 allowed_methods = webapp2.WSGIApplication.allowed_methods
@@ -21,7 +20,7 @@ webapp2.WSGIApplication.allowed_methods = allowed_methods.union(('PATCH',))
 
 
 def is_admin(*args, **kwargs):
-    if len(args) > 0 and isinstance(args[0],webapp2.RequestHandler):
+    if len(args) > 0 and isinstance(args[0], webapp2.RequestHandler):
         if args[0].request.headers.get('X-AppEngine-Cron'):
             return True
         elif args[0].request.headers.get('X-AppEngine-QueueName'):
@@ -33,20 +32,20 @@ def admin_only(func):
     def wrapper(self, *args, **kwargs):
         if not is_admin(self, *args, **kwargs):
             logging.info('user must be admin')
-            self.redirect( users.create_login_url('/') )
+            self.redirect(users.create_login_url('/'))
         else:
             return func(self, *args, **kwargs)
     return wrapper
 
 
 class BaseHandler(webapp2.RequestHandler):
-    Model       = None
-    _read_only  = []
+    Model = None
+    _read_only = []
 
     def initialize(self, *args, **kwargs):
         value = super(BaseHandler, self).initialize(*args, **kwargs)
         try:
-            self.body_params = json_parse(self.request.body)
+            self.body_params = json.loads(self.request.body)
         except:
             self.body_params = {}
         self.params = {}
@@ -98,7 +97,7 @@ class BaseHandler(webapp2.RequestHandler):
                                 raise BadValueError('stored key must reference an existing entity')
                         else:
                             value = None
-                entity.populate(**{ prop: value })
+                entity.populate(**{prop: value})
 
     def handle_exception(self, exception, debug):
         logging.exception(exception)
@@ -118,9 +117,9 @@ class BaseHandler(webapp2.RequestHandler):
             self.response.headers['Cache-Control'] = 'no-cache'
 
     def cors_headers(self):
-        self.response.headers['Access-Control-Allow-Origin' ] = ORIGINS
+        self.response.headers['Access-Control-Allow-Origin'] = ORIGINS
         self.response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-        self.response.headers['Access-Control-Max-Age'      ] = str(OPTIONS_CACHE)
+        self.response.headers['Access-Control-Max-Age'] = str(OPTIONS_CACHE)
 
     def options(self, *args, **kwargs):
         self.security_headers()
@@ -128,7 +127,8 @@ class BaseHandler(webapp2.RequestHandler):
         self.response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
         self.cache_header(OPTIONS_CACHE)
 
-    def respond(self, data, content_type='application/json', cache_life=0, headers={}):
+    def respond(self, data,
+                content_type='application/json', cache_life=0, headers={}):
         self.security_headers()
         self.cors_headers()
         self.cache_header(cache_life)
@@ -144,7 +144,7 @@ class BaseHandler(webapp2.RequestHandler):
                 data = data.to_dict()
             elif isinstance(data, (list, tuple)) and len(data) > 0 and isinstance(data[0], BaseModel):
                 data = [e.to_dict() for e in data]
-            data = json_stringify(data, separators=(',',':'))
+            data = json.dumps(data, separators=(',', ':'))
 
         self.response.headers['Content-Type'] = content_type
         self.response.out.write(data)
@@ -163,11 +163,16 @@ class BaseHandler(webapp2.RequestHandler):
 
 class RESTHandler(BaseHandler):
     def get_list(self):
-        return [e for e in self.Model.query().fetch() if self._can_do('read', e)]
+        return [e for e in self.Model.query() if self._can_do('read', e)]
+
     def can_create(self, entity): return False
+
     def can_read(self, entity): return False
+
     def can_update(self, entity, existing_entity): return False
+
     def can_delete(self, entity): return False
+
     def _can_do(self, action, *args):
         func = getattr(self, 'can_'+action)
         if isinstance(func, bool):
@@ -264,7 +269,7 @@ class RESTHandler(BaseHandler):
         for prop, _ in self.Model._properties.iteritems():
             prop_field = getattr(self.Model, prop)
             if not isinstance(prop_field, ndb.ComputedProperty):
-                entity.populate(**{ prop: getattr(existing_entity, prop) })
+                entity.populate(**{prop: getattr(existing_entity, prop)})
         self._populate_entity(entity)
         if not self._can_do('update', entity, existing_entity):
             self.respond_error(403, 'forbidden')

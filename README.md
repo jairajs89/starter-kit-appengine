@@ -7,7 +7,6 @@
 - Testing
 
 # TODO
-- dependency management
 - turn whole thing into library
 - better urlfetch testing
 - better request handler features
@@ -15,7 +14,6 @@
 - rewrite basehandler
 - rewrite resthandler
 - config model
-- flake8
 - api vs cron vs task
 
 
@@ -30,10 +28,14 @@
 
 [Install Python SDK for Google AppEngine](https://cloud.google.com/appengine/docs/standard/python/download)
 
+```sh
+make install
+```
+
 ### Development
 
 ```sh
-make debug
+make server
 # your debug server is now running at localhost:8080
 ```
 
@@ -47,4 +49,12 @@ make test
 
 ```sh
 make deploy
+```
+
+### External libraries
+
+If you add a new external dependency to requirements.xlib.txt you must run the following command and commit:
+
+```sh
+make xlib
 ```

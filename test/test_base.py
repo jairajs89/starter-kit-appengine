@@ -1,50 +1,45 @@
-import logging
-from datetime import datetime
-from json     import dumps as json_stringify
-from os.path  import dirname
-from time     import mktime
-from urllib   import urlencode
+from os.path import dirname
+from urllib import urlencode
 from urlparse import parse_qs
 from unittest import TestCase
 
-from google.appengine.api           import apiproxy_stub, apiproxy_stub_map, urlfetch
+from google.appengine.api import apiproxy_stub, apiproxy_stub_map, urlfetch
 from google.appengine.api.blobstore import blobstore_stub, file_blob_storage
-from google.appengine.api.files     import file_service_stub
-from google.appengine.datastore     import datastore_stub_util
-from google.appengine.ext           import ndb, testbed
-from webtest                        import TestApp
+from google.appengine.api.files import file_service_stub
+from google.appengine.datastore import datastore_stub_util
+from google.appengine.ext import ndb, testbed
+from webtest import TestApp
 
 from app import app
-
 
 
 class URLFetchServiceMock(apiproxy_stub.APIProxyStub):
     def __init__(self, service_name='urlfetch'):
         super(URLFetchServiceMock, self).__init__(service_name)
-        self._status  = None
+        self._status = None
         self._headers = None
         self._content = None
-        self._routes  = {}
+        self._routes = {}
 
     def set_response(self, status, headers, content):
-        self._status  = status
+        self._status = status
         self._headers = headers
         self._content = content
 
     def route_response(self, method, url, status, headers, content):
         self._routes[(method, url)] = {
-            'status'  : status,
-            'headers' : headers,
-            'content' : content,
+            'status': status,
+            'headers': headers,
+            'content': content,
         }
 
     def _Dynamic_Fetch(self, request, response):
         request_method = {
-            request.GET     : 'GET'     ,
-            request.POST    : 'POST'    ,
-            request.PUT     : 'PUT'     ,
-            request.PATCH   : 'PATCH'   ,
-            request.DELETE  : 'DELETE'  ,
+            request.GET: 'GET',
+            request.POST: 'POST',
+            request.PUT: 'PUT',
+            request.PATCH: 'PATCH',
+            request.DELETE: 'DELETE',
         }[request.method()]
         for method, path in self._routes:
             if request.url().startswith(path) and method.upper() == request_method:
@@ -52,9 +47,9 @@ class URLFetchServiceMock(apiproxy_stub.APIProxyStub):
                 break
         else:
             data = {
-                'status'  : self._status,
-                'headers' : self._headers,
-                'content' : self._content,
+                'status': self._status,
+                'headers': self._headers,
+                'content': self._content,
             }
         if data['status'] is None:
             raise urlfetch.DownloadError('Unable to fetch URL: {0} Error: test route not setup'.format(request.url()))
@@ -67,16 +62,17 @@ class URLFetchServiceMock(apiproxy_stub.APIProxyStub):
             new_header = response.add_header()
             new_header.set_key(header)
             new_header.set_value(value)
-        self.request  = request
+        self.request = request
         self.response = response
+
 
 class TestBase(TestCase):
     CUSTOM_URLFETCH = True
 
     def setUp(self):
-        root         = dirname('..')
-        self.policy  = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1.0)
-        self.app     = app
+        root = dirname('..')
+        self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1.0)
+        self.app = app
         self.testapp = TestApp(self.app)
         self.testbed = testbed.Testbed()
         self.testbed.activate()
@@ -118,7 +114,7 @@ class TestBase(TestCase):
         return self.taskqueue_stub.GetTasks(queue)
 
     def execute_tasks(self, queue='default'):
-        tasks   = self.get_tasks(queue)
+        tasks = self.get_tasks(queue)
         retries = []
         self.taskqueue_stub.FlushQueue(queue)
         for task in tasks:
@@ -136,7 +132,7 @@ class TestBase(TestCase):
             self.testapp.post(task['url'], params, headers=headers)
 
     def api_call(self, method, resource, data=None, status=200, headers={}):
-        method  = method.lower()
+        method = method.lower()
         is_json = False
 
         if data and (type(data) is dict):
@@ -152,7 +148,7 @@ class TestBase(TestCase):
                     except:
                         pass
                 resource = parts[0]+'?'+urlencode(data)
-                data     = None
+                data = None
 
         if is_json:
             func = getattr(self.testapp, method.lower()+'_json')

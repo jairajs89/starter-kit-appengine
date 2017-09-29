@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-from os       import environ
-from time     import mktime
+from os import environ
+from time import mktime
 
 from google.appengine.ext import ndb
 
@@ -9,7 +9,7 @@ DEBUG = ('Development' in environ.get('SERVER_SOFTWARE', 'Production'))
 
 
 def datetime_to_millis(dt):
-    return int( mktime(value.utctimetuple()) ) * 1000
+    return int(mktime(dt.utctimetuple())) * 1000
 
 
 def millis_to_datetime(value):

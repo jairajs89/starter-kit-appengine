@@ -2,12 +2,12 @@ from datetime import datetime
 
 from google.appengine.ext import ndb
 
-from lib.utils import datetime_to_millis, millis_to_datetime
+from lib.utils import datetime_to_millis
 
 
 class BaseModel(ndb.Model):
-    _include    = None
-    _exclude    = []
+    _include = None
+    _exclude = []
     _fetch_keys = True
 
     def to_dict(self, include=None, exclude=None, fetch_keys=None):
