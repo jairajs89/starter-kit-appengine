@@ -4,11 +4,10 @@ test:
 	python -m unittest discover -v -t . -s test
 
 debug:
-	#TODO: use gsutil
 	dev_appserver.py --host 0.0.0.0 .
 
 deploy:
-	#TODO: use gsutil
-	make test && appcfg.py update --oauth2 .
+	make test && \
+	gcloud app deploy app.yaml cron.yaml index.yaml --project starter-kit-4ppengine --quiet
 
 .PHONY: test debug deploy

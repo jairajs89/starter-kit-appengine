@@ -7,7 +7,6 @@
 - Testing
 
 # TODO
-- gsutil usage
 - dependency management
 - turn whole thing into library
 - better urlfetch testing
@@ -17,8 +16,6 @@
 - rewrite resthandler
 - config model
 - flake8
-- no tabs, all spaces
-- no shebang
 - api vs cron vs task
 
 

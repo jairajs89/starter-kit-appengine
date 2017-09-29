@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from os       import environ
 from time     import mktime
 
@@ -13,20 +13,16 @@ def datetime_to_millis(dt):
 
 
 def millis_to_datetime(value):
-	seconds = int(value/1000.0)
-	dt = datetime.utcfromtimestamp(seconds)
-
-	millis = int(millis) - seconds * 1000
-	#TODO: jairaj, add millis to dt
-
-	return dt
+    seconds = int(value/1000.0)
+    dt = datetime.utcfromtimestamp(seconds) + timedelta(milliseconds=int(millis)-seconds*1000)
+    return dt
 
 
 def future_iterator(futures):
-	while futures:
-		if len(futures) == 1:
-			future = futures[0]
-		else:
-			future = ndb.Future.wait_any(futures)
-		futures.remove(future)
-		yield future
+    while futures:
+        if len(futures) == 1:
+            future = futures[0]
+        else:
+            future = ndb.Future.wait_any(futures)
+        futures.remove(future)
+        yield future
