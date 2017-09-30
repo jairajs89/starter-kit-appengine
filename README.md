@@ -1,27 +1,3 @@
-# TODO: Features
-- DB (models, queries)
-- Cache
-- Taskqueue
-- Cron
-- Rest APIs
-- Testing
-
-# TODO
-- turn whole thing into library
-- better urlfetch testing
-- better request handler features
-- better model features
-- rewrite basehandler
-- rewrite resthandler
-- config model
-- api vs cron vs task
-
-
-
----
-
-
-
 # Welcome to your AppEngine starter kit
 
 ### Setup
