@@ -7,8 +7,8 @@ from google.appengine.api.validation import ValidationError
 from google.appengine.ext import ndb
 import webapp2
 
-from lib.utils import DEBUG, millis_to_datetime
-from model.base_model import BaseModel
+from .utils import DEBUG, millis_to_datetime
+from .model import Model
 
 
 ORIGINS = '*'
@@ -38,12 +38,12 @@ def admin_only(func):
     return wrapper
 
 
-class BaseHandler(webapp2.RequestHandler):
+class Handler(webapp2.RequestHandler):
     Model = None
     _read_only = []
 
     def initialize(self, *args, **kwargs):
-        value = super(BaseHandler, self).initialize(*args, **kwargs)
+        value = super(Handler, self).initialize(*args, **kwargs)
         try:
             self.body_params = json.loads(self.request.body)
         except:
@@ -140,9 +140,9 @@ class BaseHandler(webapp2.RequestHandler):
                 self.response.headers[header] = value
 
         if content_type == 'application/json':
-            if isinstance(data, BaseModel):
+            if isinstance(data, Model):
                 data = data.to_dict()
-            elif isinstance(data, (list, tuple)) and len(data) > 0 and isinstance(data[0], BaseModel):
+            elif isinstance(data, (list, tuple)) and len(data) > 0 and isinstance(data[0], Model):
                 data = [e.to_dict() for e in data]
             data = json.dumps(data, separators=(',', ':'))
 
@@ -161,7 +161,7 @@ class BaseHandler(webapp2.RequestHandler):
         self.response.out.write(message)
 
 
-class RESTHandler(BaseHandler):
+class RESTHandler(Handler):
     def get_list(self):
         return [e for e in self.Model.query() if self._can_do('read', e)]
 

@@ -10,8 +10,6 @@ from google.appengine.datastore import datastore_stub_util
 from google.appengine.ext import ndb, testbed
 from webtest import TestApp
 
-from app import app
-
 
 class URLFetchServiceMock(apiproxy_stub.APIProxyStub):
     def __init__(self, service_name='urlfetch'):
@@ -66,10 +64,11 @@ class URLFetchServiceMock(apiproxy_stub.APIProxyStub):
         self.response = response
 
 
-class TestBase(TestCase):
+class BaseTestCase(TestCase):
     CUSTOM_URLFETCH = True
 
     def setUp(self):
+    	from . import app
         root = dirname('..')
         self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1.0)
         self.app = app

@@ -2,13 +2,28 @@ from sys import path
 from os import listdir
 path.append('./')
 
+try:
+    import webapp2
+except:
+	from .test import TestCase
+	TestCase # Linter.. I beat you ;)
+
 import webapp2
 from google.appengine.ext import ndb
 
-from lib.utils import DEBUG
+from .utils import DEBUG
+from .handler import Handler
+from .model import Model
 
 
-routes = []
+class WarmupHandler(webapp2.RequestHandler):
+    def get(self):
+        self.response.out.write('Hello, world!')
+
+
+routes = [
+    (r'/_ah/warmup', WarmupHandler),
+]
 for file_name in listdir('api'):
     if not file_name.startswith('.') and file_name.endswith('.py') and file_name != '__init__.py':
         api_name = file_name[:-3]

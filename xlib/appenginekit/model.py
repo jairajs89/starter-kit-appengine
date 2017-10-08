@@ -2,10 +2,10 @@ from datetime import datetime
 
 from google.appengine.ext import ndb
 
-from lib.utils import datetime_to_millis
+from .utils import datetime_to_millis
 
 
-class BaseModel(ndb.Model):
+class Model(ndb.Model):
     _include = None
     _exclude = []
     _fetch_keys = True

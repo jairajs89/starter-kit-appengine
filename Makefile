@@ -18,6 +18,6 @@ test:
 
 deploy:
 	make test && \
-	gcloud app deploy app.yaml cron.yaml index.yaml --project starter-kit-4ppengine --quiet
+	gcloud app deploy app.yaml cron.yaml index.yaml --quiet --project starter-kit-4ppengine
 
 .PHONY: install xlib server lint test deploy

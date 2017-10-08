@@ -4,12 +4,12 @@ threadsafe: yes
 
 handlers:
 - url: /.*
-  script: app.app
+  script: xlib.appenginekit.app
   secure: always
+
+inbound_services:
+- warmup
 
 libraries:
 - name: webapp2
   version: "2.5.1"
-
-inbound_services:
-- warmup
