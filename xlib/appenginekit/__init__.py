@@ -11,9 +11,9 @@ except:
 import webapp2
 from google.appengine.ext import ndb
 
-from .utils import DEBUG
-from .handler import Handler
-from .model import Model
+from .utils import *
+from .handler import *
+from .model import *
 
 
 class WarmupHandler(webapp2.RequestHandler):
