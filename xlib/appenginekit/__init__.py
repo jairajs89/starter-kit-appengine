@@ -16,19 +16,24 @@ from .handler import *
 from .model import *
 
 
+routes = []
+def route(matching_path):
+    def wrapper(handler):
+        global routes
+        routes.append((matching_path, handler))
+        return handler
+    return wrapper
+
+
+@route('/_ah/warmup')
 class WarmupHandler(webapp2.RequestHandler):
     def get(self):
         self.response.out.write('Hello, world!')
 
 
-routes = [
-    (r'/_ah/warmup', WarmupHandler),
-]
 for file_name in listdir('api'):
     if not file_name.startswith('.') and file_name.endswith('.py') and file_name != '__init__.py':
         api_name = file_name[:-3]
         api_module = __import__('api.%s' % api_name).__getattribute__(api_name)
-        if hasattr(api_module, 'routes'):
-            routes += api_module.routes
 
 app = ndb.toplevel(webapp2.WSGIApplication(routes, debug=DEBUG))
